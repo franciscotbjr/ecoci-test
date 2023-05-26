@@ -12,22 +12,27 @@ inputs:
   application:
     description: "The application name"
     required: false
+    default: notused
   namespace:
     description: "The namespace of the application."
     required: false
+    default: notused
   owner:
     description: "The owner of the application."
     required: false
+    default: notused
   infra:
     description: "The infra enviorment. Ex: onpremises, aws, azure, gcp"
     required: false
+    default: notused
   region:
     description: "The region of infra enviorment."
     required: false
+    default: notused
   task:
     description: ""
     required: false
-    default: ""
+    default: get-measurement
   setup-python:
     description: ""
     required: false
@@ -41,12 +46,13 @@ runs:
   steps:
     - name: Setup python
       id: setup-python
-      if: inputs.task == 'initialize-energy-estimation' && inputs.setup-python == true
+      if: ${{ inputs.task == 'initialize-energy-estimation' && setup-python == 'true' }}
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
     - name: Initialize Energy Estimation
-      if: inputs.task == 'initialize-energy-estimation'
+      id: init-energy-estimation
+      if: ${{ inputs.task == 'initialize-energy-estimation' }}
       uses: green-coding-berlin/eco-ci-energy-estimation@v1
       with:
         task: start-measurement
@@ -54,15 +60,16 @@ runs:
 
     - name: Setup Eco-Ci Measurment
       id: setup-ecoci-measurment
-      if: inputs.task == 'get-measurement'
+      if: ${{ inputs.task == 'get-measurement' }}
       uses: green-coding-berlin/eco-ci-energy-estimation@v1
       with:
         task: get-measurement
         label: "Eco-Ci setup"
         send-data: false
 
-    - name: Display Results
-      if: inputs.display-results == true
+    - name: Display Eco-Ci Measurment Table
+      id: display-ecoci-measurment-table
+      if: ${{ inputs.display-results == 'true' && inputs.task == 'get-measurement'}}
       uses: green-coding-berlin/eco-ci-energy-estimation@v1
       with:
         task: display-results
@@ -71,7 +78,8 @@ runs:
         display-badge: false
 
     - name: Send Energy Results
-      id: energy-results
+      id: send-energy-results
+      if: ${{ inputs.task == 'get-measurement' }}
       shell: bash
       run: |
         DATE_TIME=$(date +"%Y-%m-%d %H:%M:%S");
