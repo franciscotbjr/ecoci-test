@@ -11,23 +11,27 @@ inputs:
     default: false
   application:
     description: "The application name"
-    required: true
+    required: false
   namespace:
     description: "The namespace of the application."
-    required: true
+    required: false
   owner:
     description: "The owner of the application."
-    required: true
+    required: false
   infra:
     description: "The infra enviorment. Ex: onpremises, aws, azure, gcp"
-    required: true
+    required: false
   region:
     description: "The region of infra enviorment."
-    required: true
+    required: false
   task:
     description: ""
     required: false
     default: ""
+  setup-python:
+    description: ""
+    required: false
+    default: true
 outputs:
   energy-results:
     description: "The created Energy Results JSON"
@@ -37,7 +41,7 @@ runs:
   steps:
     - name: Setup python
       id: setup-python
-      if: inputs.task == 'initialize-energy-estimation'
+      if: inputs.task == 'initialize-energy-estimation' && inputs.setup-python == true
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
