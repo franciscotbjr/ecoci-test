@@ -46,7 +46,7 @@ runs:
   steps:
     - name: Setup python
       id: setup-python
-      if: ${{ inputs.task == 'initialize-energy-estimation' && setup-python == 'true' }}
+      if: ${{ inputs.task == 'initialize-energy-estimation' && inputs.setup-python == 'true' }}
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
