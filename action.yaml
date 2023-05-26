@@ -1,0 +1,93 @@
+name: "Build eco-ci results"
+description: "Create Energy Results"
+inputs:
+  source-type:
+    description: "The source of the event"
+    required: false
+    default: "CI"
+  display-results:
+    description: "Whether to print table results in pipe"
+    required: false
+    default: false
+  application:
+    description: "The application name"
+    required: true
+  namespace:
+    description: "The namespace of the application."
+    required: true
+  owner:
+    description: "The owner of the application."
+    required: true
+  infra:
+    description: "The infra enviorment. Ex: onpremises, aws, azure, gcp"
+    required: true
+  region:
+    description: "The region of infra enviorment."
+    required: true
+outputs:
+  energy-results:
+    description: "The created Energy Results JSON"
+    value: ${{ steps.energy-results.outputs.energy-results }}
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python Measurment
+      uses: green-coding-berlin/eco-ci-energy-estimation@v1
+      with:
+        task: get-measurement
+        label: "python setup"
+        send-data: false
+
+    - name: Display Results
+      if: inputs.display-results == true
+      uses: green-coding-berlin/eco-ci-energy-estimation@v1
+      with:
+        task: display-results
+        send-data: false
+        display-graph: false
+        display-badge: false
+
+    - name: Send Energy Results
+      id: energy-results
+      shell: bash
+      run: |
+        DATE_TIME=$(date +"%Y-%m-%d %H:%M:%S");
+
+        IFS='| ' read -a arr <<< $ECO_CI_MEASUREMENT_TABLE_LINES;
+
+        ENERGY_RESULTS="\"{ \
+          \"sourceType\":\"${{ inputs.source-type }}\", \
+          \"application\":\"${{ inputs.application }}\", \
+          \"infra\":\"${{ inputs.infra }}\", \
+          \"region\":\"${{ inputs.region }}\", \
+          \"namespace\":\"${{ inputs.namespace }}\", \
+          \"owner\":\"${{ inputs.owner }}\", \
+          \"datetime\":\"$DATE_TIME\", \
+          \"data\":{ \
+            \"cpuAvgPercent\":\"${arr[3]}\", \
+            \"energyJoules\":\"${arr[4]}\", \
+            \"powerAvgWatts\":\"${arr[5]}\", \
+            \"repository\":\"${{github.repository}}\", \
+            \"workflow\":\"$ECO_CI_WORKFLOW_ID\", \
+            \"runId\":\"${{ github.run_id }}\", \
+            \"jobId\":\"${{github.job}}\", \
+            \"commitHash\":\"${{ github.sha }}\", \
+            \"branch\":\"${{ github.ref_name }}\", \
+            \"cpuModel\":\"$ECO_CI_MODEL_NAME\", \
+            \"cpuMake\":\"$ECO_CI_CPU_MAKE\", \
+          } \
+        }\""
+
+        echo $ENERGY_RESULTS;
+
+        echo "energy-results=$ENERGY_RESULTS" >> "$GITHUB_OUTPUT";
+
+        echo "curl -X POST \"http://api...\" -H \'Content-Type: application/json\' -d $ENERGY_RESULTS";
+
+  # send-ci-energy-estimation:
+  #   name: Send Ci Energy Estimation
+  #   runs-on: ubuntu-latest
+  #   needs: [test,build,deploy]
+  #   steps:
+  #     - name: Print JSON Energy Results
+  #       run: echo "{\"sourceType\":\"CI\", \"application\":\"${{ env.app_name }}\", \"infra\":\"${{ env.infra }}\", \"region\":\"${{ env.aws_region }}\", \"namespace\":\"${{ env.namespace }}\", \"owner\":\"${{ env.value_stream }}\", \"datetime\":\"$(date +"%Y-%m-%d %T")\", \"data\":[${{ needs.test.outputs.energy-estimation }}, ${{  needs.build.outputs.energy-estimation  }}, ${{  needs.deploy.outputs.energy-estimation }}]}";
