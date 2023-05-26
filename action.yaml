@@ -24,6 +24,10 @@ inputs:
   region:
     description: "The region of infra enviorment."
     required: true
+  task:
+    description: ""
+    required: false
+    default: ""
 outputs:
   energy-results:
     description: "The created Energy Results JSON"
@@ -31,11 +35,26 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Python Measurment
+    - name: Setup python
+      id: setup-python
+      if: inputs.task == 'initialize-energy-estimation'
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Initialize Energy Estimation
+      if: inputs.task == 'initialize-energy-estimation'
+      uses: green-coding-berlin/eco-ci-energy-estimation@v1
+      with:
+        task: start-measurement
+        display-graph: false
+
+    - name: Setup Eco-Ci Measurment
+      id: setup-ecoci-measurment
+      if: inputs.task == 'get-measurement'
       uses: green-coding-berlin/eco-ci-energy-estimation@v1
       with:
         task: get-measurement
-        label: "python setup"
+        label: "Eco-Ci setup"
         send-data: false
 
     - name: Display Results
