@@ -82,7 +82,7 @@ runs:
       if: ${{ inputs.task == 'get-measurement' }}
       shell: bash
       run: |
-        DATE_TIME=$(date +"%Y-%m-%d %H:%M:%S");
+        DATE_TIME=$(date +"%Y-%m-%d %H:%M:%S%z");
 
         IFS='| ' read -a arr <<< $ECO_CI_MEASUREMENT_TABLE_LINES;
 
