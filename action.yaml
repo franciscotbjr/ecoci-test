@@ -95,9 +95,9 @@ runs:
           \"owner\":\"${{ inputs.owner }}\", \
           \"datetime\":\"$DATE_TIME\", \
           \"data\":{ \
-            \"cpuAvgPercent\":\"${arr[3]}\", \
-            \"energyJoules\":\"${arr[4]}\", \
-            \"powerAvgWatts\":\"${arr[5]}\", \
+            \"cpuAvgPercent\":${arr[3]}, \
+            \"energyJoules\":${arr[4]}, \
+            \"powerAvgWatts\":${arr[5]}, \
             \"repository\":\"${{github.repository}}\", \
             \"workflow\":\"$ECO_CI_WORKFLOW_ID\", \
             \"runId\":\"${{ github.run_id }}\", \
