@@ -111,7 +111,7 @@ runs:
         }"
 
         echo "ENERGY_RESULTS"
-        echo $ENERGY_RESULTS
+        echo '$ENERGY_RESULTS'
 
         ENERGY_RESULTS_SL=$(echo "\'$ENERGY_RESULTS\'" | tr '\n' ' ')
 
