@@ -53,7 +53,7 @@ runs:
     - name: Initialize Energy Estimation
       id: init-energy-estimation
       if: ${{ inputs.task == 'initialize-energy-estimation' }}
-      uses: green-coding-berlin/eco-ci-energy-estimation@v1
+      uses: green-coding-berlin/eco-ci-energy-estimation@v2
       with:
         task: start-measurement
         display-graph: false
@@ -61,7 +61,7 @@ runs:
     - name: Setup Eco-Ci Measurment
       id: setup-ecoci-measurment
       if: ${{ inputs.task == 'get-measurement' }}
-      uses: green-coding-berlin/eco-ci-energy-estimation@v1
+      uses: green-coding-berlin/eco-ci-energy-estimation@v2
       with:
         task: get-measurement
         label: "Eco-Ci setup"
@@ -70,7 +70,7 @@ runs:
     - name: Display Eco-Ci Measurment Table
       id: display-ecoci-measurment-table
       if: ${{ inputs.display-results == 'true' && inputs.task == 'get-measurement'}}
-      uses: green-coding-berlin/eco-ci-energy-estimation@v1
+      uses: green-coding-berlin/eco-ci-energy-estimation@v2
       with:
         task: display-results
         send-data: false
@@ -84,7 +84,9 @@ runs:
       run: |
         DATE_TIME=$(date +"%Y-%m-%d %H:%M:%S%z");
 
-        IFS='| ' read -a arr <<< $ECO_CI_MEASUREMENT_TABLE_LINES;
+        cpu_avg_percent=$(echo '${{ steps.display-ecoci-measurment-table.outputs.data-total-json }}' | jq -r '.cpu_avg_percent')
+        energy_joules=$(echo '${{ steps.display-ecoci-measurment-table.outputs.data-total-json }}' | jq -r '.energy_joules')
+        power_avg_watts=$(echo '${{ steps.display-ecoci-measurment-table.outputs.data-total-json }}' | jq -r '.power_avg_watts')
 
         ENERGY_RESULTS="{
             \"sourceType\": \"${{ inputs.source-type }}\",
@@ -96,9 +98,9 @@ runs:
             \"datetime\": \"${DATE_TIME}\",
             \"environment\": \"${{ github.job }}\",
             \"data\": {
-            \"cpuAvgPercent\": ${arr[3]},
-            \"energyJoules\": ${arr[4]},
-            \"powerAvgWatts\": ${arr[5]},
+            \"cpuAvgPercent\": $cpu_avg_percent,
+            \"energyJoules\": $energy_joules,
+            \"powerAvgWatts\": $power_avg_watts,
             \"repository\": \"${{github.repository}}\",
             \"workflow\": \"$ECO_CI_WORKFLOW_ID\",
             \"runId\": \"${{ github.run_id }}\",
