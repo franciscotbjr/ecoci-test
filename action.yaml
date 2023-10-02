@@ -120,4 +120,4 @@ runs:
 
         echo "energy-results=\'$ENERGY_RESULTS_SL\'" >> "$GITHUB_OUTPUT";
 
-        echo "curl -X POST \"http://api...\" -H \'Content-Type: application/json\' -d $ENERGY_RESULTS";
+        echo "curl -X POST \"http://api...\" -H \'Content-Type: application/json\' -d $ENERGY_RESULTS_SL";
