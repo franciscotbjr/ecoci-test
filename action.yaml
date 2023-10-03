@@ -1,24 +1,26 @@
-name: "Build eco-ci results"
-description: "Create Energy Results"
+name: "Carbon Monitoring Action"
+description: >
+  This action is responsible for capturing energy expenditure analysis data 
+  and sending it to Carbon Monitoring Service.
 inputs:
   source-type:
-    description: "The source of the event"
+    description: "The source of the event, as an instance a CI worflow. Possible values: CI, Container, Workstation."
     required: false
-    default: "CI"
+    default: CI
   display-results:
-    description: "Whether to print table results in pipe"
+    description: "Whether to print table results in Github worflow execution result UI."
     required: false
     default: false
   application:
-    description: "The application name"
+    description: "The application name. It may be the same as 'app_name' env from 'standard.yaml' created by PDD."
     required: false
     default: notused
   namespace:
-    description: "The namespace of the application."
+    description: "The namespace of the application. It is 'System, Product or Project' from PDD. It may be the same as 'namespace' env from 'standard.yaml'."
     required: false
     default: notused
   owner:
-    description: "The owner of the application."
+    description: "The owner of the application. It is 'Domain/ Value Stream' from PDD. It may be the same as 'value_stream' env from 'standard.yaml'."
     required: false
     default: notused
   infra:
@@ -26,20 +28,24 @@ inputs:
     required: false
     default: notused
   region:
-    description: "The region of infra enviorment."
+    description: "The region of infra enviorment. It may be the same as 'aws_region' env from 'standard.yaml'."
     required: false
     default: notused
   task:
-    description: ""
-    required: false
+    description: "The task to be performed. Possible values: 'initialize-energy-estimation', 'get-measurement' (default) ."
+    required: true
     default: get-measurement
   setup-python:
-    description: ""
+    description: "Use it to run actions/setup-python@v4. If current workflow runner already has python intalled, disable it by setting 'false'. Default is 'true'."
     required: false
     default: true
+  carbon-monitoring-service-api:
+    description: "URI of Carbon Monitoring Service in PRD"
+    required: false
+    default: "https://carbon-monitoring-service.arquitetura.grupoboticario.digital/ci"
 outputs:
   energy-results:
-    description: "The created Energy Results JSON"
+    description: "The created Energy Results JSON."
     value: ${{ steps.energy-results.outputs.energy-results }}
 runs:
   using: "composite"
@@ -77,7 +83,7 @@ runs:
         display-graph: false
         display-badge: false
 
-    - name: Send Energy Results
+    - name: Send Eco-Ci Measurment Results
       id: send-energy-results
       if: ${{ inputs.task == 'get-measurement' }}
       shell: bash
@@ -113,7 +119,7 @@ runs:
         }"
 
         echo "ENERGY_RESULTS"
-        echo '$ENERGY_RESULTS'
+        echo $ENERGY_RESULTS
 
         ENERGY_RESULTS_SL=$(echo "\'$ENERGY_RESULTS\'" | tr '\n' ' ')
 
